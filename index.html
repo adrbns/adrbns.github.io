@@ -1,11 +1,307 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hi bitches</title>
+    <style>
+        #game-container {
+            position: relative;
+            width: 600px;
+            height: 400px;
+            border: 1px solid black;
+            overflow: hidden;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .dinosaur {
+            position: absolute;
+            font-size: 20px;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .steak {
+            position: absolute;
+            font-size: 20px;
+        }
+
+        .sword {
+            position: absolute;
+            font-size: 40px;
+            color: red;
+            animation: fly 3s linear infinite;
+            transform-origin: bottom;
+        }
+
+        .skull {
+            position: absolute;
+            font-size: 40px;
+            color: white;
+        }
+
+        .poop {
+            position: absolute;
+            font-size: 20px;
+            animation: fall 2s linear infinite;
+        }
+
+        @keyframes fly {
+            0% {
+                top: -60px;
+                transform: rotate(0deg);
+            }
+            100% {
+                top: 100%;
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fall {
+            0% {
+                top: -40px;
+                opacity: 0;
+            }
+            100% {
+                top: 100%;
+                opacity: 1;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div>🦖</div>
+    <p>Use the arrows ⬅️⬆️⬇️➡️<br><strong>Anything</strong> can happen</p>
+    
+    <div id="game-container">
+        <div id="score">Score: 0</div>
+        <div id="dinosaur" class="dinosaur">&#129429;</div>
+    </div>
+
+    <script>
+        var dinosaur = document.getElementById('dinosaur');
+        var steakEmojis = [];
+        var swordEmojis = [];
+        var skullEmojis = [];
+        var poopEmojis = [];
+        var meteorInterval;
+        var score = 0;
+        var isGameOver = false;
+
+        document.addEventListener('keydown', moveDinosaur);
+
+        function moveDinosaur(event) {
+            if (isGameOver) {
+                return;
+            }
+
+            var currentPositionX = parseFloat(getComputedStyle(dinosaur).left);
+            var currentPositionY = parseFloat(getComputedStyle(dinosaur).top);
+            var newPositionX, newPositionY;
+
+            switch (event.keyCode) {
+                case 37: // Left arrow
+                    newPositionX = currentPositionX - 10;
+                    if (newPositionX >= 0) {
+                        dinosaur.style.left = newPositionX + 'px';
+                        dinosaur.style.transform = 'scaleX(1)'; // Flip horizontally
+                    }
+                    break;
+                case 38: // Up arrow
+                    newPositionY = currentPositionY - 10;
+                    if (newPositionY >= 0) {
+                        dinosaur.style.top = newPositionY + 'px';
+                    }
+                    break;
+                case 39: // Right arrow
+                    newPositionX = currentPositionX + 10;
+                    if (newPositionX + dinosaur.offsetWidth <= document.getElementById('game-container').offsetWidth) {
+                        dinosaur.style.left = newPositionX + 'px';
+                        dinosaur.style.transform = 'scaleX(-1)'; // Reset flip
+                    }
+                    break;
+                case 40: // Down arrow
+                    newPositionY = currentPositionY + 10;
+                    if (newPositionY + dinosaur.offsetHeight <= document.getElementById('game-container').offsetHeight) {
+                        dinosaur.style.top = newPositionY + 'px';
+                    }
+                    break;
+            }
+
+            checkCollision();
+        }
+
+        function checkCollision() {
+            var dinosaurRect = dinosaur.getBoundingClientRect();
+
+            for (var i = 0; i < steakEmojis.length; i++) {
+                var steak = steakEmojis[i];
+                var steakRect = steak.getBoundingClientRect();
+
+                if (
+                    dinosaurRect.left < steakRect.right &&
+                    dinosaurRect.right > steakRect.left &&
+                    dinosaurRect.top < steakRect.bottom &&
+                    dinosaurRect.bottom > steakRect.top
+                ) {
+                    steak.style.display = 'none';
+                    steakEmojis.splice(i, 1);
+                    increaseSize();
+                    updateScore();
+                    break;
+                }
+            }
+
+            for (var j = 0; j < swordEmojis.length; j++) {
+                var sword = swordEmojis[j];
+                var swordRect = sword.getBoundingClientRect();
+
+                if (
+                    dinosaurRect.left < swordRect.right &&
+                    dinosaurRect.right > swordRect.left &&
+                    dinosaurRect.top < swordRect.bottom &&
+                    dinosaurRect.bottom > swordRect.top
+                ) {
+                    gameOver();
+                    break;
+                }
+            }
+        }
+
+        function increaseSize() {
+            var currentSize = parseFloat(getComputedStyle(dinosaur).fontSize);
+            var newSize = currentSize * 1.005;
+            dinosaur.style.fontSize = newSize + 'px';
+        }
+
+        function updateScore() {
+            score++;
+            document.getElementById('score').textContent = 'Score: ' + score;
+
+            if (score % 10 === 0) {
+                createPoop();
+            }
+
+            if (score % 50 === 0) {
+                clearInterval(meteorInterval);
+                meteorInterval = setInterval(createSword, 2000 - (score * 10));
+            }
+        }
+
+        function createSteak() {
+            var steak = document.createElement('div');
+            steak.classList.add('steak');
+            steak.style.left = getRandomPosition(0, document.getElementById('game-container').offsetWidth - 20) + 'px';
+            steak.style.top = getRandomPosition(0, document.getElementById('game-container').offsetHeight - 20) + 'px';
+            steak.innerHTML = '&#127830;'; // Emoji of steak
+
+            document.getElementById('game-container').appendChild(steak);
+            steakEmojis.push(steak);
+        }
+
+        function createSword() {
+            var sword = document.createElement('div');
+            sword.classList.add('sword');
+            var direction = Math.random() < 0.5 ? 'right' : 'left';
+            var startPositionX, startPositionY, endPositionX, endPositionY, startAngle, endAngle;
+
+            if (direction === 'right') {
+                startPositionX = -60;
+                startPositionY = getRandomPosition(0, document.getElementById('game-container').offsetHeight - 40);
+                endPositionX = document.getElementById('game-container').offsetWidth;
+                endPositionY = startPositionY;
+                startAngle = 0;
+                endAngle = 360;
+            } else {
+                startPositionX = document.getElementById('game-container').offsetWidth;
+                startPositionY = getRandomPosition(0, document.getElementById('game-container').offsetHeight - 40);
+                endPositionX = -60;
+                endPositionY = startPositionY;
+                startAngle = 180;
+                endAngle = -180;
+            }
+
+            sword.style.left = startPositionX + 'px';
+            sword.style.top = startPositionY + 'px';
+            sword.innerHTML = '&#x1F5E1;'; // Emoji of sword
+
+            sword.style.transformOrigin = direction === 'right' ? 'top left' : 'top right';
+            sword.style.animation = 'fly 3s linear infinite';
+
+            var keyframes = '@keyframes fly { 0% { top: ' + startPositionY + 'px; left: ' + startPositionX + 'px; transform: rotate(' + startAngle + 'deg); } 100% { top: ' + endPositionY + 'px; left: ' + endPositionX + 'px; transform: rotate(' + endAngle + 'deg); } }';
+            var styleSheet = document.createElement('style');
+            styleSheet.innerHTML = keyframes;
+            document.head.appendChild(styleSheet);
+
+            document.getElementById('game-container').appendChild(sword);
+            swordEmojis.push(sword);
+        }
+
+        function createSkull(positionX, positionY) {
+            var skull = document.createElement('div');
+            skull.classList.add('skull');
+            skull.style.left = positionX + 'px';
+            skull.style.top = positionY + 'px';
+            skull.innerHTML = '&#x1F480;'; // Emoji of skull
+
+            document.getElementById('game-container').appendChild(skull);
+            skullEmojis.push(skull);
+        }
+
+        function createPoop() {
+            var poop = document.createElement('div');
+            poop.classList.add('poop');
+            poop.style.left = getRandomPosition(0, document.getElementById('game-container').offsetWidth - 20) + 'px';
+            poop.style.top = '-40px';
+            poop.innerHTML = '&#x1F4A9;'; // Emoji of poop
+
+            document.getElementById('game-container').appendChild(poop);
+            poopEmojis.push(poop);
+        }
+
+        function getRandomPosition(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function startGame() {
+            meteorInterval = setInterval(createSword, 2000);
+        }
+
+        function gameOver() {
+            isGameOver = true;
+            clearInterval(meteorInterval);
+            createSkull(dinosaur.offsetLeft, dinosaur.offsetTop);
+            alert('Game Over! Your score: ' + score);
+            resetGame();
+        }
+
+        function resetGame() {
+            isGameOver = false;
+            steakEmojis.forEach(function(steak) {
+                steak.style.display = 'none';
+            });
+            steakEmojis = [];
+            swordEmojis.forEach(function(sword) {
+                sword.style.display = 'none';
+            });
+            swordEmojis = [];
+            skullEmojis.forEach(function(skull) {
+                skull.style.display = 'none';
+            });
+            skullEmojis = [];
+            poopEmojis.forEach(function(poop) {
+                poop.style.display = 'none';
+            });
+            poopEmojis = [];
+            score = 0;
+            document.getElementById('score').textContent = 'Score: ' + score;
+            dinosaur.style.fontSize = '20px';
+            dinosaur.style.left = '280px';
+            dinosaur.style.top = '180px';
+        }
+
+        startGame();
+        setInterval(createSteak, 3000);
+    </script>
 </body>
 </html>

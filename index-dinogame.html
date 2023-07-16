@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #game-container {
+            position: relative;
+            width: 600px;
+            height: 400px;
+            border: 1px solid black;
+            overflow: hidden;
+            background-color: rgba(10, 39, 7, 0.1);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .dinosaur {
+            position: absolute;
+            font-size: 20px;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .steak {
+            position: absolute;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="score">Score: 0</div>
+        <div id="dinosaur" class="dinosaur">&#129430;</div>
+    </div>
+
+    <script>
+        var dinosaur = document.getElementById('dinosaur');
+        var steakEmojis = [];
+        var score = 0;
+
+        document.addEventListener('keydown', moveDinosaur);
+
+        function moveDinosaur(event) {
+            var currentPositionX = parseFloat(getComputedStyle(dinosaur).left);
+            var currentPositionY = parseFloat(getComputedStyle(dinosaur).top);
+            var newPositionX, newPositionY;
+
+            switch (event.keyCode) {
+                case 37: // Left arrow
+                    newPositionX = currentPositionX - 10;
+                    if (newPositionX >= 0) {
+                        dinosaur.style.left = newPositionX + 'px';
+                        dinosaur.style.transform = 'scaleX(1)'; // Flip horizontally
+                    }
+                    break;
+                case 38: // Up arrow
+                    newPositionY = currentPositionY - 10;
+                    if (newPositionY >= 0) {
+                        dinosaur.style.top = newPositionY + 'px';
+                    }
+                    break;
+                case 39: // Right arrow
+                    newPositionX = currentPositionX + 10;
+                    if (newPositionX + dinosaur.offsetWidth <= document.getElementById('game-container').offsetWidth) {
+                        dinosaur.style.left = newPositionX + 'px';
+                        dinosaur.style.transform = 'scaleX(-1)'; // Reset flip
+                    }
+                    break;
+                case 40: // Down arrow
+                    newPositionY = currentPositionY + 10;
+                    if (newPositionY + dinosaur.offsetHeight <= document.getElementById('game-container').offsetHeight) {
+                        dinosaur.style.top = newPositionY + 'px';
+                    }
+                    break;
+            }
+
+            checkCollision();
+        }
+
+        function checkCollision() {
+            var dinosaurRect = dinosaur.getBoundingClientRect();
+
+            for (var i = 0; i < steakEmojis.length; i++) {
+                var steak = steakEmojis[i];
+                var steakRect = steak.getBoundingClientRect();
+
+                if (
+                    dinosaurRect.left < steakRect.right &&
+                    dinosaurRect.right > steakRect.left &&
+                    dinosaurRect.top < steakRect.bottom &&
+                    dinosaurRect.bottom > steakRect.top
+                ) {
+                    steak.style.display = 'none';
+                    steakEmojis.splice(i, 1);
+                    increaseSize();
+                    updateScore();
+                    break;
+                }
+            }
+        }
+
+        function increaseSize() {
+            var currentSize = parseFloat(getComputedStyle(dinosaur).fontSize);
+            var newSize = currentSize * 1.005;
+            dinosaur.style.fontSize = newSize + 'px';
+        }
+
+        function updateScore() {
+            score++;
+            document.getElementById('score').textContent = 'Score: ' + score;
+        }
+
+        setInterval(createSteak, 1000);
+
+        function createSteak() {
+            var steak = document.createElement('div');
+            steak.classList.add('steak');
+            steak.style.left = getRandomPosition(0, document.getElementById('game-container').offsetWidth - 20) + 'px';
+            steak.style.top = getRandomPosition(0, document.getElementById('game-container').offsetHeight - 20) + 'px';
+            steak.innerHTML = '&#127830;'; // Emoji of steak
+
+            document.getElementById('game-container').appendChild(steak);
+            steakEmojis.push(steak);
+        }
+
+        function getRandomPosition(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+    </script>
+</body>
+</html>
