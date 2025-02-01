@@ -1,0 +1,35 @@
+ body{
+            display: flex;
+            justify-content: center;   
+            margin: 0 auto;
+        }
+
+        h1{
+            font-size: 60px;
+            font-style: italic;
+            isolation: isolate;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            letter-spacing: -13px;
+            
+        }
+
+        h1 span:nth-child(1) {
+            color: #fca713
+        }
+
+        h1 span:nth-child(2) {
+            color: #e0d502;
+        }
+
+        h1 span:nth-child(3) {
+            color: #a76eee;
+        }
+
+        h1 span:nth-child(4) {
+            color: #52e479;
+        }
+        h1 span{
+            mix-blend-mode: darken;
+            mix-blend-mode: color-burn;
+            mix-blend-mode: multiply;
+        }
