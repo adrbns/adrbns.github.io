@@ -1,16 +1,19 @@
+ @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
+
  body{
             display: flex;
             justify-content: center;   
             margin: 0 auto;
+            background-color: lightgray;
         }
 
         h1{
-            font-size: 60px;
+            font-size: 180px;
             font-style: italic;
             isolation: isolate;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            letter-spacing: -13px;
-            
+            font-family: "Anton", serif;
+            font-weight: 400;
+            letter-spacing: -37px;
         }
 
         h1 span:nth-child(1) {
